@@ -247,7 +247,7 @@
         } else {
             var proportion = (now - startTime) / duration;
         }
-        if (stage === 0) {
+        if (stage === 0 || stage === 6) {
             target = (Math.cos( proportion * Math.PI - Math.PI) + 1)/2;
         } else if (stage === 1 || stage === 3 || stage === 5) {
             target = Math.pow(proportion, 2);
@@ -348,10 +348,32 @@
 						coquille.position.y = intermediateValue(coquille.startTime, 1000, coquille.currentPos, 0);
 					}
 				}
+        if (now - startTime >= 8000) {
+          if (stage === 5){
+						stage = 6;
+					  newStartTime = now;
 
-				if (now - startTime >= 8000) {
+					}
+					if (stage === 6){
+            if(node.update){
+              node.currentX = node.rotation.x;
+              node.currentY = node.rotation.y;
+              node.currentZ = node.rotation.z;
+              node.update = false;
+            }
+            if (node.rotates) {
+  	            node.rotation.x = intermediateValue(newStartTime, duration, node.currentX, node.startRotation[0]);
+  	            node.rotation.y = intermediateValue(newStartTime, duration, node.currentY, node.startRotation[1]);
+  	            node.rotation.z = intermediateValue(newStartTime, duration, node.currentZ, node.startRotation[2]);
+  	        }
+					}
+
+				}
+
+				if (now - startTime >= 11000) {
 					reset();
 					startTime = now;
+          stage = 0 ;
 
 				}
 
