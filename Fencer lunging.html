@@ -94,13 +94,12 @@
     var frontWrist = newBodyPart("Front wrist", 0, 0, 0, true);
     var frontHand = newBodyPart("Front hand", 0.3, 0.3, 0.1, false);
     var frontFingers = newBodyPart("Front fingers", 0, 0, 0, true);
-    var sword = newBodyPart("Front fingers", 0.02, 1.5, 0.02, false);
 
     // Swords parts
     var pommel = newBodyPart("pommel", 0.1, 0.12, 0.1, false);
-    var handle = newBodyPart("handle", 0.2, 0.6, 0.2, false);
-    var coquille = newBodyPart("coquille", 0.1, 0.1, 0.5, false);
-    var tang = newBodyPart("tang", 0.1, 0.4, 0.1, false);
+    var handle = newBodyPart("handle", 0.1, 0.5, 0.1, false);
+    var coquille = newBodyPart("coquille", 0.5, 0.03, 0.5, false);
+    var tang = newBodyPart("tang", 0.05, 0.3, 0.05, false);
     var blade = newBodyPart("blade", 0.07, 1.3, 0.07, false);
 
     // CONNECT THEM TOGETHER
@@ -180,6 +179,7 @@
     frontHand.offset(frontHand, 0, -0.5, 0);
     frontFingers.offset(frontHand, 0, -0.5, 0);
 
+    // handle.offset(handle, 0, -, 0);
 
 		swordPartsOffset();
 
@@ -235,19 +235,26 @@
     camera.position.y = 1;
     camera.position.x = 0;
 
-    function intermediateValue(startTime, duration, startValue, endValue, level) {
+    function intermediateValue(startTime, duration, startValue, endValue) {
         /* alters the value of a parameter between two limits,
      from startValue to endValue and back again, with soft start and soft finish.
   */
         //        alert("level: " + level + ".  Getting intermediate value between " + startValue + " and " + endValue);
         var now = new Date().getTime();
+        var target;
         if ((now - startTime) >= duration) {
             var proportion = 1;
         } else {
             var proportion = (now - startTime) / duration;
         }
+        if (stage === 0) {
+            target = (Math.cos( proportion * Math.PI - Math.PI) + 1)/2;
+        } else if (stage === 1 || stage === 3 || stage === 5) {
+            target = Math.pow(proportion, 2);
+        } else {
+          target = proportion;
+        }
 
-        var target = (Math.cos(proportion * Math.PI - Math.PI) + 1) / 2;
         var intermediateValue = startValue + target * (endValue - startValue);
         //        alert("level: " + level + ". Got intermediate value of " + intermediateValue +" between " + startValue + " and " + endValue);
         return intermediateValue;
@@ -257,7 +264,7 @@
         //alert("level: " + level + ". Potentially updating " + node.name + " at level " + level);
         //        alert("updating " + node.name + " " + node.rotates);
         var now = new Date().getTime();
-        if (now - startTime >= 2000) {
+        if (now - startTime >= 3000) {
 					//Detach the blade
 						if (stage === 0) {
 							stage = 1;
@@ -266,29 +273,30 @@
 							blade.updateMatrixWorld();
 							blade.currentPos = blade.position.y;
 							blade.startTime = now;
-
-
 						}
-						else {
-							blade.position.y = intermediateValue(blade.startTime, 1000, blade.currentPos, 0, level);
+						if (stage === 1){
+							blade.position.y = intermediateValue(blade.startTime, 1000, blade.currentPos, 0);
 						}
 
         }
-				if (now - startTime >= 3000) {
+				if (now - startTime >= 4000) {
 					if (stage === 1){
 						stage = 2;
 						frontElbow.startTime = now;
 						frontShoulder.startTime = now;
+            frontFingers.startTime = now;
 						frontElbow.currentPos = frontElbow.rotation.z;
 						frontShoulder.currentPos = frontShoulder.rotation.z;
+            frontFingers.currentPos = frontFingers.rotation.z;
 					}
-					else {
-						frontElbow.rotation.z = intermediateValue(frontElbow.startTime, 1000, frontElbow.currentPos, 2, level);
-						frontShoulder.rotation.z = intermediateValue(frontShoulder.startTime, 1000, frontShoulder.currentPos,0.5, level);
+					if(stage === 2) {
+            frontFingers.rotation.z = intermediateValue(frontFingers.startTime, 1000, frontFingers.currentPos, 0.7);
+						frontElbow.rotation.z = intermediateValue(frontElbow.startTime, 1000, frontElbow.currentPos, 2);
+						frontShoulder.rotation.z = intermediateValue(frontShoulder.startTime, 1000, frontShoulder.currentPos,0.5);
 					}
 				}
 
-				if (now - startTime >= 4000) {
+				if (now - startTime >= 5000) {
 					if (stage === 2){
 						stage = 3;
 						//Detatch pommel
@@ -304,26 +312,30 @@
 						tang.startTime = now;
 
 					}
-					else {
-						pommel.position.y = intermediateValue(pommel.startTime, 1000, pommel.currentPos, 0, level);
-						tang.position.y = intermediateValue(tang.startTime, 1000, tang.currentPos, 0, level);
+					if(stage === 3){
+						pommel.position.y = intermediateValue(pommel.startTime, 1000, pommel.currentPos, 0);
+						tang.position.y = intermediateValue(tang.startTime, 1000, tang.currentPos, 0);
 					}
 				}
 
-				if (now - startTime >= 5000) {
+				if (now - startTime >= 6000) {
 					if (stage === 3){
-						frontElbow.startTime = now;
-						frontShoulder.startTime = now;
-						frontElbow.currentPos = frontElbow.rotation.z;
-						frontShoulder.currentPos = frontShoulder.rotation.z;
-						stage = 4;
+            stage = 4;
+            frontElbow.startTime = now;
+            frontShoulder.startTime = now;
+            frontFingers.startTime = now;
+            frontElbow.currentPos = frontElbow.rotation.z;
+            frontShoulder.currentPos = frontShoulder.rotation.z;
+            frontFingers.currentPos = frontFingers.rotation.z;
+
 					}
-					else {
-						frontElbow.rotation.z = intermediateValue(frontElbow.startTime, 1000, frontElbow.currentPos, 0, level);
-						frontShoulder.rotation.z = intermediateValue(frontShoulder.startTime, 1000, frontShoulder.currentPos,1.7, level);
+					if (stage === 4){
+            frontFingers.rotation.z = intermediateValue(frontFingers.startTime, 1000, frontFingers.currentPos, 0.1);
+						frontElbow.rotation.z = intermediateValue(frontElbow.startTime, 1000, frontElbow.currentPos, 0);
+						frontShoulder.rotation.z = intermediateValue(frontShoulder.startTime, 1000, frontShoulder.currentPos,1.7);
 					}
 				}
-				if (now - startTime >= 6000) {
+				if (now - startTime >= 7000) {
 					if (stage === 4){
 						stage = 5;
 						//Detach coquille
@@ -332,12 +344,12 @@
 						coquille.currentPos = coquille.position.y;
 						coquille.startTime = now;
 					}
-					else {
-						coquille.position.y = intermediateValue(coquille.startTime, 1000, coquille.currentPos, 0, level);
+					if (stage === 5){
+						coquille.position.y = intermediateValue(coquille.startTime, 1000, coquille.currentPos, 0);
 					}
 				}
 
-				if (now - startTime >= 7500) {
+				if (now - startTime >= 8000) {
 					reset();
 					startTime = now;
 
@@ -346,9 +358,9 @@
 
 				else if (now-startTime < 2000) {
 	        if (node.rotates) {
-	            node.rotation.x = intermediateValue(startTime, duration, node.startRotation[0], node.endRotation[0], level);
-	            node.rotation.y = intermediateValue(startTime, duration, node.startRotation[1], node.endRotation[1], level);
-	            node.rotation.z = intermediateValue(startTime, duration, node.startRotation[2], node.endRotation[2], level);
+	            node.rotation.x = intermediateValue(startTime, duration, node.startRotation[0], node.endRotation[0]);
+	            node.rotation.y = intermediateValue(startTime, duration, node.startRotation[1], node.endRotation[1]);
+	            node.rotation.z = intermediateValue(startTime, duration, node.startRotation[2], node.endRotation[2]);
 	        }
 
 				}
@@ -368,38 +380,20 @@
             }
         }
     }
-
+    function detachPart(node) {
+      node.updateMatrixWorld();
+      THREE.SceneUtils.detach(node, node.parent, scene);
+      pommel.currentPos = pommel.position.y;
+      pommel.startTime = now;
+    }
 		function reset() {
 			stage = 0;
-			// handle.updateMatrixWorld();
-			// THREE.SceneUtils.attach(coquille, scene, handle);
-			// coquille.position.x = handle.position.x;
-			// coquille.position.y = handle.position.y;
-			// coquille.position.z = handle.position.z;
-			//
-			// THREE.SceneUtils.attach(pommel, scene, handle);
-			// pommel.position.x = handle.position.x;
-			// pommel.position.y = handle.position.y;
-			// pommel.position.z = handle.position.z;
-			//
-			// coquille.updateMatrixWorld();
-			// THREE.SceneUtils.attach(tang, scene, coquille);
-			// tang.position.x = coquille.position.x;
-			// tang.position.y = coquille.position.y;
-			// tang.position.z = coquille.position.z;
-			//
-			//
-			//
-			// tang.updateMatrixWorld();
-			// THREE.SceneUtils.attach(blade, scene, tang);
-			// blade.position.x = tang.position.x;
-			// blade.position.y = tang.position.y;
-			// blade.position.z = tang.position.z;
 			resetRotation ([coquille, pommel, tang, blade]);
 			handle.add(coquille);
 			coquille.position.x = 0;
 			coquille.position.y = 0;
 			coquille.position.z = 0;
+
 			handle.add(pommel);
 			pommel.position.x = 0;
 			pommel.position.y = 0;
@@ -410,14 +404,15 @@
 			tang.position.y = 0;
 			tang.position.z = 0;
 			tang.add(blade);
+
 			blade.position.x = 0;
 			blade.position.y = 0;
 			blade.position.z = 0;
-
+      swordPartsOffset();
 
 		}
 		function swordPartsOffset() {
-			handle.offset(handle, 0, -0.5, 0);
+
 			pommel.offset(handle, 0, 0.5, 0);
 			pommel.offset(pommel, 0, 0.5, 0);
 			coquille.offset(coquille, 0, -0.5, 0);
@@ -437,18 +432,17 @@
 		}
     var startTime = new Date().getTime();
     var stage = 0;
-		var rotateAngle = 0;
-		var radius = 10;
-    var duration = 2000;
+		var rotateAngle = 0.7;
+		var radius = 8;
+    var duration = 3000;
     var nodesToUpdate = new Set();
     nodesToUpdate.add("all");
     function render() {
         requestAnimationFrame(render);
-				rotateAngle += 0.005
-				camera.position.x = handle.position.x + radius * Math.cos( rotateAngle);
-				camera.position.z = handle.position.z + radius * Math.sin( rotateAngle);
-				camera.lookAt( handle.position );
-				// camera.rotation.y -=0.005;
+				// rotateAngle += 0.005;
+				// camera.position.x = scene.position.x + radius * Math.cos(rotateAngle);
+				// camera.position.z = scene.position.z + radius * Math.sin(rotateAngle);
+				// camera.lookAt( scene.position );
         var axis = new THREE.Vector3(1, 0, 0).normalize();
         update(scene, nodesToUpdate, 0);
         renderer.render(scene, camera);
